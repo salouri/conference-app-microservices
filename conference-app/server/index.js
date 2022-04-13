@@ -1,7 +1,6 @@
 const express = require('express');
 const createError = require('http-errors');
 const path = require('path');
-const bodyParser = require('body-parser');
 const configs = require('./config');
 const Speakers = require('./services/Speakers');
 const Feedback = require('./services/Feedback');
@@ -24,7 +23,7 @@ app.locals.title = config.sitename;
 
 app.use(express.static('public'));
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/favicon.ico', (req, res) => res.sendStatus(204));
 

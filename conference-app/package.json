@@ -11,7 +11,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.18.3",
     "express": "^4.16.3",
     "http-errors": "^1.7.0",
     "pug": "^3.0.2"
