@@ -14,7 +14,23 @@ class ServuceRegistry {
     let key = 0;
     let result;
     if (candidateServices.length > 0) {
-      candidateServices.sort((a, b) => a[1].hits - b[1].hits);
+      // sort by hits, and then by timestamp
+      candidateServices.sort((a, b) => {
+        if (a[1].hits < b[1].hits) {
+          return -1;
+        }
+        if (a[1].hits > b[1].hits) {
+          return 1;
+        }
+        // if a[1].hits === b[1].hits
+        if (b[1].timestamp < a[1].timestamp) {
+          return -1;
+        }
+        if (a[1].timestamp < b[1].timestamp) {
+          return 1;
+        }
+        return 0;
+      });
       // eslint-disable-next-line prefer-destructuring
       key = candidateServices[0][0];
       this.services[key].hits += 1;
