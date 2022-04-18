@@ -1,19 +1,40 @@
 #!/usr/bin/env node
 
+const cluster = require('cluster');
 const http = require('http');
+const { cpus } = require('os');
+const process = require('process');
 
 const config = require('../config')[process.env.NODE_ENV || 'development'];
-
-const log = config.log();
 const service = require('../server/service')(config);
 
-const server = http.createServer(service);
-
-// Important - a service should not have a fixed port but should randomly choose one
-server.listen(process.env.PORT || 3000);
-
-server.on('listening', () => {
-  log.info(
-    `Hi there! I'm listening on port ${server.address().port} in ${service.get('env')} mode.`,
-  );
-});
+const log = config.log();
+const numCPUs = cpus().length;
+if (cluster.isPrimary) {
+  log.info(`Primary ${process.pid} is running`);
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i += 1) {
+    cluster.fork(); // creating child process
+  }
+  // on exit of cluster
+  cluster.on('exit', (worker, code, signal) => {
+    if (signal) {
+      log.info(`worker was killed by signal: ${signal}`);
+    } else if (code !== 0) {
+      log.info(`worker exited with error code: ${code}`);
+    } else {
+      log.info('worker success!');
+    }
+  });
+} else {
+  // Workers can share any TCP connection
+  // In this case it is an HTTP server
+  const server = http.createServer(service);
+  server.listen(process.env.PORT || 3000);
+  // Important - a service should not have a fixed port but should randomly choose one
+  server.on('listening', () => {
+    log.info(
+      `Hi there! I'm listening on port ${server.address().port} in ${service.get('env')} mode.`,
+    );
+  });
+}
